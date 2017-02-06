@@ -20,18 +20,22 @@ app.controller('SellFormCtrl', ['$scope', '$http','PoliceInfos', function($scope
 	
 	$scope.policeType = PoliceInfos.getPoliceInfo().PoliceType
 	$scope.messagee= $scope.policeType + " Policesi";
-	
+	$scope.dummy_infos = [];
+
 
 	$http.post('http://127.0.0.1:8888', $scope.policeType)
-         		.success(function(data) {
+         		.then(function(data) {
            			//TO DO: TURN DATA INTO ARRAY
            			$scope.SellFormArray = data;
            			for (var i = 0; i  < data.length ; i++) {
            				
            				$scope.dummy_infos.push("filler");
            			};
-         		})
-         		.error(function(data) {
+         		},
+         		function(err,status) {
+			$scope.err = { message: err, stat: status};
+        			console.log($scope.err.stat); 
+        			console.log($scope.err.message); 
 			$scope.SellFormArray = "still empty";
 			$scope.dummy_infos.push("filler");
          		});

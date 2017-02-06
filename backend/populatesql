@@ -1,0 +1,16 @@
+CREATE TABLE sellform
+(
+
+type char(20),
+info char(20)
+
+);
+
+INSERT INTO sellform
+VALUES ( "kasko","tc" ),
+( "kasko","marka" ) ,
+( "kasko","model" ),
+( "seyahat","kıta" ),
+( "seyahat","baslangic tarihi" ),
+( "seyahat","donus tarihi" ),
+( "seyahat","kapsam" );

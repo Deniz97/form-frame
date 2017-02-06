@@ -1,0 +1,15 @@
+<div class="main">
+  <div class="container">
+   <h2>{{messagee}}</h2>
+
+    <form>
+      <div ng-repeat:"item in SellFormArray">
+        	{{item}}
+                  <!--Note that use of $index may cause problem when coupled with filters-->
+        	<input type="text" ng-model="dummy_infos[ $index ]"><br>
+      </div>
+      <input type="submit" value="Submit" ng-click="FetchPoliceForm()">
+    </form>
+
+  </div>
+</div>
