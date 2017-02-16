@@ -3,6 +3,9 @@ import socket
 import mysql.connector
 import sys
 import SocketServer
+import json
+from pprint import pprint
+
 
 
 PORT_NUMBER = 8888
@@ -32,39 +35,59 @@ class myHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 		self.wfile.write("Hello World !")
 		return
 	def do_POST(self):
-		print "Catched a POST request"
-		self.send_response(200,"OK")
-		self.send_header('Content-type','text/html')
+		def queryByTable(table, police_type):
+			db = mysql.connector.connect(   
+			                     user="ada",         # your username
+			                     passwd="ada123", 
+			                     host="localhost",
+			                     db="ada_db")        # name of the data base
+
+			# you must create a Cursor object. It will let
+			#  you execute all the queries you need
+			cur = db.cursor()
+			# Use all the SQL you like
+			query = "SELECT info FROM %s WHERE type=\'%s\'" % (table, police_type)
+			cur.execute(query)
+
+			retval=""
+			for row in cur.fetchall():
+			    retval += row[0]+","
+			retval=retval[:-1]
+			db.close()
+			return retval
+
+		def sellformRequest(http_data):
+			self.send_response(200,"OK")
+			self.send_header('Content-Type','text/plain')
+			self.send_header('Access-Control-Allow-Origin', '*')             
+			
+			table = "sellform"
+			police_type = http_data["police_type"]
+			retval = queryByTable( table, police_type )	
+
+			# Send the html message
+			#content_length = sys.getsizeof(retval)
+			content_length = len(retval)
+			self.send_header("Content-Length",str(content_length) )
+			self.end_headers()
+			self.wfile.write(retval)
+			return
 		
-		#Go to database
-		print "Finished headers"
+		def fiyatformRequest(http_data):
+			pass
+		def policeformRequest(http_data):
+			pass
 
-		db = mysql.connector.connect(   
-		                     user="ada",         # your username
-		                     passwd="ada123", 
-		                     host="localhost",
-		                     db="ada_db")        # name of the data base
-
-		# you must create a Cursor object. It will let
-		#  you execute all the queries you need
-		cur = db.cursor()
-		http_data = "kasko"
-		# Use all the SQL you like
-		cur.execute("SELECT info FROM sellform WHERE type='"+ http_data+"'")
-		# print all the first cell of all the rows
-		retval = "["
-		for row in cur.fetchall():
-		    retval += row[0]+","
-		retval += "]"
-		db.close()
-
-		print "Response= " + retval
-		# Send the html message
-		content_length = sys.getsizeof(retval)
-		self.send_header("Content-Length",str(content_length))
-		self.end_headers()
-		self.wfile.write(retval)
-		return
+		length = int(self.headers['content-length'])
+		http_data = self.rfile.read(length)
+		http_data = json.loads(http_data)
+		print http_data
+		if http_data["request_type"] == "sellform":
+			sellformRequest(http_data)
+		if http_data["request_type"] == "fiyatform":
+			fiyatformRequest(http_data)
+		if http_data["request_type"] == "policeform":
+			policeformRequest(http_data)
 
 class ForkingHTTPServer(SocketServer.ForkingMixIn, BaseHTTPServer.HTTPServer):
     def finish_request(self, request, client_address):
@@ -82,5 +105,9 @@ def httpd(handler_class=myHandler, server_address=('localhost', 8888)):
         print '^C received, shutting down the web server'
         srvr.socket.close()
 
+
+
+
 if __name__ == "__main__":
     httpd()
+

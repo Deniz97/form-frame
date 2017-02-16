@@ -1,18 +1,8 @@
-//Not used yet, currently http services are done in controllers
-app.factory('GetPoliceForms', ['$http', function($http) {
-  return $http.post('http://127.0.0.1:8888', "TODO:FIX HERE")
-         .success(function(data) {
-           return data;
-         })
-         .error(function(data) {
-           return data;
-         });
-}]);
-
 //getter-setters for police information, modularized for easy comminication between controllers
 app.service('PoliceInfos', function () {
     var  PoliceInfo = {
-        PoliceType: "araba",
+        request_type: "sellform",
+        police_type: "seyahat",
         infos : []
     };
     return {
@@ -20,12 +10,34 @@ app.service('PoliceInfos', function () {
             return PoliceInfo;
         },
         setPoliceType: function(value) {
-            PoliceInfo.PoliceType = value;
+            PoliceInfo.police_type = value;
         },
         addInfo: function(value) {
             PoliceInfo.infos.push(value);
+        },
+        clearInfo: function() {
+            PoliceInfo.infos = [];
+        },
+        setRequestType: function(value) {
+            PoliceInfo.request_type = value;
         }
     };
 });
+
+
+//wrapper to comminicate with server
+app.factory('GetPoliceForms', ['$http','PoliceInfos' ,function($http,PoliceInfos) {
+  return $http.post('http://localhost:8888', PoliceInfos.getPoliceInfo())
+         .success(function(response) {
+           return response;
+         })
+         .error(function(response) {
+           return response;
+         });
+}]);
+
+
+
+
 
 
